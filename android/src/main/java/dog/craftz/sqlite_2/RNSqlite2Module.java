@@ -23,6 +23,7 @@ import org.json.JSONException;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RNSqlite2Module extends ReactContextBaseJavaModule {
 
@@ -36,7 +37,10 @@ public class RNSqlite2Module extends ReactContextBaseJavaModule {
   private static final String[] EMPTY_COLUMNS = new String[]{};
   private static final SQLitePLuginResult EMPTY_RESULT = new SQLitePLuginResult(EMPTY_ROWS, EMPTY_COLUMNS, 0, 0, null);
 
-  private static final Map<String, SQLiteDatabase> DATABASES = new HashMap<String, SQLiteDatabase>();
+  private static final Map<String, SQLiteDatabase> DATABASES = new HashMap<>();
+
+//  if synchronized getDatabase won`t work uncomment this line or use both variants
+//  private static final Map<String, SQLiteDatabase> DATABASES = new ConcurrentHashMap<>();
   private static final Map<String, Handler> HANDLERS = new HashMap<String, Handler>();
 
   /**
@@ -212,7 +216,7 @@ public class RNSqlite2Module extends ReactContextBaseJavaModule {
     return null;
   }
 
-  private SQLiteDatabase getDatabase(String name) {
+  private synchronized SQLiteDatabase getDatabase(String name) {
     SQLiteDatabase database = DATABASES.get(name);
     if (database == null) {
       if (":memory:".equals(name)) {
